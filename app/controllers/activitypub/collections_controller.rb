@@ -24,16 +24,16 @@ class ActivityPub::CollectionsController < ActivityPub::BaseController
   def set_size
     case params[:id]
     when 'featured'
-      @account.pinned_statuses.count
+      @size = @account.pinned_statuses.count
     else
-      raise ActiveRecord::RecordNotFound
+      not_found
     end
   end
 
   def scope_for_collection
     case params[:id]
     when 'featured'
-      return Status.none if @account.blocking?(signed_request_account)
+      return Status.none if !signed_request_account.nil? && (@account.blocking?(signed_request_account) || (!signed_request_account.domain.nil? && @account.domain_blocking?(signed_request_account.domain)))
 
       @account.pinned_statuses
     else
